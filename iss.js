@@ -1,4 +1,7 @@
+const request = require('request');
+
 /**
+ * fetchMyIP
  * Makes a single API request to retrieve the user's IP address.
  * Input:
  *   - A callback (to pass back an error or the IP string)
@@ -7,9 +10,6 @@
  *   - The IP address as a string (null if error). Example: "162.245.144.188"
  */
 
-const request = require('request');
-
-// uses ipify to fetch IP address
 const fetchMyIP = function(callback) {
   // use request to fetch IP address from JSON API
   request('https://api.ipify.org?format=json', (error, response, body) => {
@@ -27,10 +27,19 @@ const fetchMyIP = function(callback) {
 
     // else return the ip
     const ip = JSON.parse(body).ip;
-    callback(null, ip);
+    return callback(null, ip);
   });
 };
 
+/**
+ * fetchCoordsByIP
+ * Makes a single API request to retrieve a latitude/longitude based on an IP address.
+ * Input:
+ *   - A callback (to pass back an error or the lat/long)
+ * Returns (via Callback):
+ *   - An error, if any (nullable)
+ *   - The lat/long as an object (null if error). Example: { latitude: 43.653226, longitude: -79.3831843 }
+ */
 // takes in an IP address and returns the latitude and longitude for it.
 const fetchCoordsByIP = function(ip, callback) {
   // use request to fetch longitude and latitude
@@ -44,10 +53,33 @@ const fetchCoordsByIP = function(ip, callback) {
 
     // else return the lat & long in an object 
     const { latitude, longitude } = parsedBody;
-    callback(null, { latitude, longitude });
+    return callback(null, { latitude, longitude });
+  })
+};
+
+/**
+ * fetchISSFlyOverTimes
+ * Makes a single API request to retrieve upcoming ISS fly over times the for the given lat/lng coordinates.
+ * Input:
+ *   - An object with keys `latitude` and `longitude`
+ *   - A callback (to pass back an error or the array of resulting data)
+ * Returns (via Callback):
+ *   - An error, if any (nullable)
+ *   - The fly over times as an array of objects (null if error). Example:
+ *     [ { risetime: 134564234, duration: 600 }, ... ]
+ */
+const fetchISSFlyOverTimes = function(coords, callback) {
+  const URL = `https://iss-flyover.herokuapp.com/json/?lat=${coords.latitude}&lon=${coords.longitude}`
+  request(URL, (error, response, body) => {
+    // if error
+    if (error) {
+      return callback(error, null);
+    }
+    const parsedBody = JSON.parse(body);
+    return callback(null, parsedBody.response);
   })
 };
 
 
-module.exports = { fetchMyIP, fetchCoordsByIP };
+module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes };
 
