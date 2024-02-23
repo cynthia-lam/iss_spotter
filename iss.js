@@ -38,16 +38,13 @@ const fetchCoordsByIP = function(ip, callback) {
     // if error
     const parsedBody = JSON.parse(body);
     if (!parsedBody.success) {
-      const errMessage = `Failed to find latitude and longitude. Server message: ${parsedBody.message}`
-      return callback(Error(errMessage), null);
+      const errMessage = `Error: Success status was ${parsedBody.success}. Server message says: ${parsedBody.message} when fetching for ${parsedBody.ip}`
+      return callback(errMessage, null);
     }
 
     // else return the lat & long in an object 
-    const lat = JSON.parse(body).latitude;
-    const long = JSON.parse(body).longitude;
-    const latLong = {latitude: lat,
-                      longitude: long}
-    callback(null, latLong);
+    const { latitude, longitude } = parsedBody;
+    callback(null, { latitude, longitude });
   })
 };
 
