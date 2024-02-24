@@ -9,7 +9,6 @@ const request = require('request');
  *   - An error, if any (nullable)
  *   - The IP address as a string (null if error). Example: "162.245.144.188"
  */
-
 const fetchMyIP = function(callback) {
   // use request to fetch IP address from JSON API
   request('https://api.ipify.org?format=json', (error, response, body) => {
@@ -40,7 +39,6 @@ const fetchMyIP = function(callback) {
  *   - An error, if any (nullable)
  *   - The lat/long as an object (null if error). Example: { latitude: 43.653226, longitude: -79.3831843 }
  */
-// takes in an IP address and returns the latitude and longitude for it.
 const fetchCoordsByIP = function(ip, callback) {
   // use request to fetch longitude and latitude
   request('http://ipwho.is/' + ip, (error, response, body) => {
@@ -77,17 +75,37 @@ const fetchISSFlyOverTimes = function(coords, callback) {
     }
 
     // if non-200 status, assume server error
-    const parsedBody = JSON.parse(body);
-
     if (response.statusCode !== 200) {
-      callback(Error(`Status Code ${response.statusCode} when fetching ISS pass times: ${body}`), null);
-      return;
+      const errMessage = `Status Code ${response.statusCode} when fetching ISS pass times: ${body}`;
+      return callback(new Error(errMessage), null);
     }
 
+    const parsedBody = JSON.parse(body);
     return callback(null, parsedBody.response);
   });
 };
 
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
 
-module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes };
+    fetchCoordsByIP(ip, (error, loc) => {
+      if (error) {
+        return callback(error, null);
+      }
+
+      fetchISSFlyOverTimes(loc, (error, nextPasses) => {
+        if (error) {
+          return callback(error, null);
+        }
+
+        callback(null, nextPasses);
+      });
+    });
+  });
+};
+
+module.exports = { nextISSTimesForMyLocation };
 
