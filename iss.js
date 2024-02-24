@@ -69,7 +69,7 @@ const fetchCoordsByIP = function(ip, callback) {
  *     [ { risetime: 134564234, duration: 600 }, ... ]
  */
 const fetchISSFlyOverTimes = function(coords, callback) {
-  const URL = `https://iss-flyover.herokuapp.com/json/?lat=10000&lon=${coords.longitude}`;
+  const URL = `https://iss-flyover.herokuapp.com/json/?lat=${coords.latitude}&lon=${coords.longitude}`;
   request(URL, (error, response, body) => {
     // if error
     if (error) {
@@ -79,14 +79,10 @@ const fetchISSFlyOverTimes = function(coords, callback) {
     // if non-200 status, assume server error
     const parsedBody = JSON.parse(body);
 
-    if (body === 'invalid coordinates') {
-      const errMessage = 'Error: server says' + body;
-      return callback(errMessage, null);
+    if (response.statusCode !== 200) {
+      callback(Error(`Status Code ${response.statusCode} when fetching ISS pass times: ${body}`), null);
+      return;
     }
-    // if (parsedBody.message !== 'success') {
-    //   const errMessage = `Error: Success status was ${parsedBody.success}.`;
-    //   return callback(errMessage, null);
-    // }
 
     return callback(null, parsedBody.response);
   });
