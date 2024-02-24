@@ -16,7 +16,7 @@ const fetchMyIP = function(callback) {
     // if error
     if (error) {
       return callback(error, null);
-      
+
     }
 
     // if non-200 status, assume server error
@@ -47,14 +47,14 @@ const fetchCoordsByIP = function(ip, callback) {
     // if error
     const parsedBody = JSON.parse(body);
     if (!parsedBody.success) {
-      const errMessage = `Error: Success status was ${parsedBody.success}. Server message says: ${parsedBody.message} when fetching for ${parsedBody.ip}`
+      const errMessage = `Error: Success status was ${parsedBody.success}. Server message says: ${parsedBody.message} when fetching for ${parsedBody.ip}`;
       return callback(errMessage, null);
     }
 
-    // else return the lat & long in an object 
+    // else return the lat & long in an object
     const { latitude, longitude } = parsedBody;
     return callback(null, { latitude, longitude });
-  })
+  });
 };
 
 /**
@@ -69,15 +69,27 @@ const fetchCoordsByIP = function(ip, callback) {
  *     [ { risetime: 134564234, duration: 600 }, ... ]
  */
 const fetchISSFlyOverTimes = function(coords, callback) {
-  const URL = `https://iss-flyover.herokuapp.com/json/?lat=${coords.latitude}&lon=${coords.longitude}`
+  const URL = `https://iss-flyover.herokuapp.com/json/?lat=10000&lon=${coords.longitude}`;
   request(URL, (error, response, body) => {
     // if error
     if (error) {
       return callback(error, null);
     }
+
+    // if non-200 status, assume server error
     const parsedBody = JSON.parse(body);
+
+    if (body === 'invalid coordinates') {
+      const errMessage = 'Error: server says' + body;
+      return callback(errMessage, null);
+    }
+    // if (parsedBody.message !== 'success') {
+    //   const errMessage = `Error: Success status was ${parsedBody.success}.`;
+    //   return callback(errMessage, null);
+    // }
+
     return callback(null, parsedBody.response);
-  })
+  });
 };
 
 
