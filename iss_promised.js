@@ -19,7 +19,12 @@ const fetchCoordsByIP = function(body) {
   return request(`http://ipwho.is/${ip}`);
 }
 
+const fetchISSFlyOverTimes = function(body) {
+  const latitude = JSON.parse(body).latitude;
+  const longitude = JSON.parse(body).longitude;
+  
+  return request(`https://iss-flyover.herokuapp.com/json/?lat=${latitude}&lon=${longitude}`);
+}
 
 
-
-module.exports = { fetchMyIP, fetchCoordsByIP };
+module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes };
